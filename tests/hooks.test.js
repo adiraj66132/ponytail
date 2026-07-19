@@ -354,6 +354,20 @@ assert.match(
   /PONYTAIL MODE ACTIVE — level: full/,
 );
 
+// Bare `/ponytail` on Qoder is report-only: Qoder has no SessionStart, so the
+// double-duty block below emits the full ruleset as the report. There must be
+// exactly ONE JSON object on stdout — a second confirmation would concatenate
+// into invalid hook output.
+result = run(
+  'ponytail-mode-tracker.js',
+  qoderEnv,
+  JSON.stringify({ prompt: '/ponytail' }),
+);
+assert.equal(result.status, 0, result.stderr);
+const qoderReportLines = result.stdout.split('\n').filter((l) => l.trim());
+assert.equal(qoderReportLines.length, 1, 'Qoder report-only must emit one JSON object, got:\n' + result.stdout);
+JSON.parse(result.stdout);  // must be parseable as a single object
+
 // /ponytail ultra: mode tracker updates flag and injects ultra ruleset.
 result = run(
   'ponytail-mode-tracker.js',
